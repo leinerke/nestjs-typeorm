@@ -12,8 +12,8 @@ export class UsersService {
   constructor(
     private productsService: ProductsService,
     private configService: ConfigService,
-    // @Inject('PG') private clientPg: Client,
-  ) {}
+  ) // @Inject('PG') private clientPg: Client,
+  {}
 
   private counterId = 1;
   private users: User[] = [
@@ -69,12 +69,12 @@ export class UsersService {
     return true;
   }
 
-  getOrderByUser(id: number): Order {
+  async getOrderByUser(id: number) {
     const user = this.findOne(id);
     return {
       date: new Date(),
       user,
-      products: this.productsService.findAll(),
+      products: await this.productsService.findAll(),
     };
   }
 
