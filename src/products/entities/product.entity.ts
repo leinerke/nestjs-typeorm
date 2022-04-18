@@ -4,14 +4,16 @@ import {
   Entity,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne, //Una sola marca
 } from 'typeorm';
+import { Brand } from './brand.entity';
 
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   name: string;
 
   @Column({ type: 'text' })
@@ -37,4 +39,7 @@ export class Product {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updateAt: Date;
+
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  brand: Brand;
 }
