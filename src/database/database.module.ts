@@ -31,7 +31,7 @@ const API_KEY_PROD = 'PROD1212121SA';
         return {
           type: 'postgres',
           synchronize: false,
-          autoLoadEntities: false,
+          autoLoadEntities: true,
           ...ConfigService.postgres,
         };
       },
