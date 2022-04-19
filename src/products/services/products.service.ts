@@ -67,6 +67,11 @@ export class ProductsService {
     if (changes.brandId) {
       product.brand = await this.brandRepo.findOne(changes.brandId);
     }
+    if (changes.categoriesIds) {
+      product.categories = await this.categoryRepo.findByIds(
+        changes.categoriesIds,
+      );
+    }
     this.productRepo.merge(product, changes);
     return this.productRepo.save(product);
   }
