@@ -6,25 +6,29 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Product } from '../entities/product.entity';
 import { CreateProductDto, UpdateProductDto } from '../dtos/products.dtos';
-import { BrandsService } from './brands.service';
+import { Product } from '../entities/product.entity';
+import { Category } from '../entities/category.entity';
+import { Brand } from '../entities/brand.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
-    private brandService: BrandsService,
+    @InjectRepository(Category) private categoryRepo: Repository<Category>,
+    @InjectRepository(Brand) private brandRepo: Repository<Brand>,
   ) {}
 
   findAll() {
     return this.productRepo.find({
-      relations: ['brand'],
+      relations: ['brand', 'categories'],
     });
   }
 
   async findOne(id: number) {
-    const product = await this.productRepo.findOne(id);
+    const product = await this.productRepo.findOne(id, {
+      relations: ['brand', 'categories'],
+    });
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
     }
@@ -40,9 +44,17 @@ export class ProductsService {
       // newProduct.stock = data.stock;
       // newProduct.image = data.image;
       const newProduct = this.productRepo.create(data);
+
       if (data.brandId) {
-        newProduct.brand = await this.brandService.findOne(data.brandId);
+        newProduct.brand = await this.brandRepo.findOne(data.brandId);
       }
+
+      if (data.categoriesIds) {
+        newProduct.categories = await this.categoryRepo.findByIds(
+          data.categoriesIds,
+        );
+      }
+
       return await this.productRepo.save(newProduct);
     } catch (e) {
       console.error(e.message);
@@ -53,8 +65,7 @@ export class ProductsService {
   async update(id: number, changes: UpdateProductDto) {
     const product = await this.productRepo.findOne(id);
     if (changes.brandId) {
-      const brand = await this.brandService.findOne(changes.brandId);
-      product.brand = brand;
+      product.brand = await this.brandRepo.findOne(changes.brandId);
     }
     this.productRepo.merge(product, changes);
     return this.productRepo.save(product);
